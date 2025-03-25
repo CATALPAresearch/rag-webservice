@@ -9,6 +9,7 @@
 import nltk
 nltk.download('averaged_perceptron_tagger_eng')
 ```
+* Edit the .env file
 * Start the webservice `poetry run python3.11 src/ws-basic.py`
 * Test RAG `poetry run python3.11 src/ws/RAG_Manager.py`
 

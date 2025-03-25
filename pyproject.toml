@@ -32,6 +32,7 @@ asyncio = "^3.4.3"
 flask = "^3.1.0"
 rank-bm25 = "^0.2.2"
 flask-cors = "^5.0.1"
+flasgger = ">=0.9.7"
 
 
 [build-system]
