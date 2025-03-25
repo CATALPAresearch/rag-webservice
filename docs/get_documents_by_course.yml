@@ -1,0 +1,76 @@
+# docs/get_documents_by_course.yml
+post:
+  summary: Get indexed documents by system and course
+  description: Returns a list of documents indexed for Retrieval-Augmented Generation (RAG) for a specific system and course.
+  tags:
+    - Documents
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - system
+            - course_id
+          properties:
+            system:
+              type: string
+              example: "aple-demo-moodle"
+            course_id:
+              type: integer
+              example: 101
+  responses:
+    '200':
+      description: List of indexed documents returned successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              documents:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    filename:
+                      type: string
+                      example: "lecture_notes_week1.pdf"
+                    document_id:
+                      type: string
+                      example: "doc123"
+                    system:
+                      type: string
+                      example: "aple-demo-moodle"
+                    course_id:
+                      type: integer
+                      example: 101
+    '400':
+      description: Missing required parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Missing parameters"
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Unexpected error occurred"
