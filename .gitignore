@@ -23,6 +23,7 @@ ENV/
 data/vectors/
 data/uploads/
 data/pdfs/
+chroma_langchain_db/
 *.log
 .cache
 .pytest_cache/
