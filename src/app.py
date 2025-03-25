@@ -26,9 +26,18 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 rag_manager = RAG_Manager()
 
 
+@app.route('/', methods=['GET'])
+def root():
+    """
+    Say hello in the browser
+    """
+    return jsonify({
+        'message': 'Hello, your RAG-Webservice is operating will but will not be accessible as a webpage (;'
+        }), 200
+
+
 @app.route('/documents/create_index', methods=['POST'])
 @cross_origin()
-@swag_from('docs/create_document_index.yml')
 def create_document_index():
     """
     Test: curl -X POST -F file=@"/Users/nise/Downloads/INFO_ZLB___98_Didactics_of_Computer_Science_EN_20250212.pdf" http://localhost:5000/process
@@ -68,7 +77,6 @@ def create_document_index():
 
 @app.route('/documents/documents_by_course', methods=['POST'])
 @cross_origin()
-@swag_from('docs/get_documents_by_course.yml')
 def get_documents_by_course():
     try:
         data = request.get_json()
@@ -111,7 +119,6 @@ def delete_index():
 
 @app.route('/llm/models/list', methods=['POST'])
 @cross_origin()
-@swag_from('docs/get_models.yml')
 def get_models():
     llmm = LLM_Manager()
     response = llmm.get_model_names()
@@ -124,8 +131,10 @@ def get_models():
 
 @app.route('/llm/query', methods=['POST'])
 @cross_origin()
-@swag_from('docs/query_llm.yml')
 def query_llm():
+    """
+    Query a large language model (LLM) with a prompt.
+    """
     prompt = request.form.get('prompt', 'unknown')
     
     response = rag_manager.process_simple_question(prompt)
@@ -138,7 +147,6 @@ def query_llm():
 
 @app.route('/llm/query_documents', methods=['POST'])
 @cross_origin()
-@swag_from('docs/query_rag.yml')
 def query_rag():
     #document_index = request.form.get('document_index', None)
     prompt = request.form.get('prompt', 'unknown')
@@ -156,7 +164,6 @@ def query_rag():
     logger.info("response")
     logger.info(response)
     return jsonify({
-        'message': '', 
         'response': response
         }), 200
 

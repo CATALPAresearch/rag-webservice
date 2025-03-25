@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class LLM_Manager:
 
     def __init__(self):
-        self.base_url = "localhost:11434"
+        self.base_url = os.getenv("OLLAMA_HOST", "http://localhost:11434")
         # self.base_url = "http://catalpa-llm.fernuni-hagen.de:11434"
         self.selected_model = 'llama3.1:latest'  # 'deepseek-r1:latest'
         self.llm = None
