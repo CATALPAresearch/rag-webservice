@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore', category=Warning, message='.*torch.classes.*')
 
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+#from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
@@ -49,7 +49,8 @@ class VectorDB:
     def set_index_embedding_model(self, model_provider="local", model_name="all-MiniLM-L6-v2"):
         match model_provider:
             case 'local':
-                self.index_embedding = SentenceTransformerEmbeddings(model_name=model_name)
+                #self.index_embedding = SentenceTransformerEmbeddings(model_name=model_name)
+                self.index_embedding = HuggingFaceEmbeddings(model_name=model_name)
             case 'HuggingFace':
                 self.index_embedding = HuggingFaceEmbeddings(model_name=model_name)
             
