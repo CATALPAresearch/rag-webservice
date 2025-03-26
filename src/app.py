@@ -148,16 +148,20 @@ def query_llm():
 @app.route('/llm/query_documents', methods=['POST'])
 @cross_origin()
 def query_rag():
+    data = request.get_json()
     #document_index = request.form.get('document_index', None)
-    prompt = request.form.get('prompt', 'unknown')
-    filter = request.form.get('filter', {})
+    model = data.get('model', 'unknown')
+    prompt = data.get('prompt', 'unknown')
+    filter = data.get('filter', {})
     
+    """
     filter = {
             'system': ['aple-demo-moodle'],
             'courses': [0],
             'activity_longpage': [1,7],
         }
-
+    """
+    logger.info('prompt: '+prompt)
     #matched_docs, response = asyncio.run(rag_manager.process_rag_question(prompt, document_index))
     matched_docs, response = asyncio.run(rag_manager.process_rag_question(prompt, filter=filter))
     

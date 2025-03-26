@@ -37,7 +37,8 @@ class RAG_Manager(LLM_Manager):
     """
     
     def __init__(self):
-        super().__init__()
+        # super.selected_model = # FixMe
+        super().__init__() # load LLM
         self.rt = VectorDB()
         self.vector_db = self.rt.vector_db
         
@@ -56,6 +57,8 @@ class RAG_Manager(LLM_Manager):
         logger.info(f"Processing question: {question} using model: {self.selected_model}")
             
         query_prompt = self._build_query_prompt_from_template(question)
+        logger.info('query_prompt')
+        logger.info(query_prompt)
 
         retriever = self._setup_retriever(query_prompt, filter)
 
@@ -113,13 +116,16 @@ class RAG_Manager(LLM_Manager):
         Set up the multi-query retriever.
         TODO: search by similarity and get similarity score
         """
+
+        #if isinstance(filter, list) and len(filter) > 0 and isinstance(filter[0], dict):
+        #    filter = filter[0]
+        logger.info('filter rag')
+        logger.info(filter)
         
         filter_keys = {
             "system": "system",
             "courses": "course_id",
             "activity_name": "activity_name",
-            #"activity_types": "activity_type",
-            #"activity_ids": "activity_id",
             "activity_pdf": "activity_pdf",
             "activity_longpage": "activity_longpage",
             "activity_page": "activity_page",
@@ -128,21 +134,16 @@ class RAG_Manager(LLM_Manager):
         }
 
         combined_filter = {
-                "$and": [
-                    {db_key: {"$in": filter.get(user_key, [])}}
-                    for user_key, db_key in filter_keys.items()
-                ]
-            }
+            "$and": [
+                {db_key: {"$in": filter[user_key]}}
+                for user_key, db_key in filter_keys.items()
+                if filter.get(user_key)  # Only include if list is not empty or None
+            ]
+        }
 
-        # Create filter dictionaries for each list
-        #system_filter = {"system": {"$in": filter['system'] if not None else []}}
-        #course_filter = {"course_id": {"$in": filter['courses'] if not None else []}}
-        #activity_type_filter = {"activity_type": {"$in": filter['activity_types'] if not None else []}}
-        #activity_id_filter = {"activity_id": {"$in": filter['activity_ids'] if not None else []}}
-
-        # Combine filters using $and or $or operators
-        #combined_filter = {"$and": [system_filter,course_filter,activity_type_filter,activity_id_filter]}
-
+        logger.info('combined filter')
+        logger.info(combined_filter)
+        
         filters = {'k': 10, 'filter': combined_filter }
         filters = {'k': 10 }
         try:
@@ -173,39 +174,40 @@ class RAG_Manager(LLM_Manager):
     
 
 if __name__ == "__main__":
-    pp = RAG_Manager()
+    rag_manager = RAG_Manager()
     
     documents = [
         {
             "file": 'data/pdfs/1884/2022-Kurs1884-KE1.pdf',
             "system": 'aple-demo-moodle',
             "course_id": 0,
-            "activity_type": 'longpage',
+            "activity_longpage": 1,
             "activity_name": 'KE 1',
-            "activity_id": 1
+            
         },
          {
             "file": 'data/pdfs/1884/2022-Kurs1884-KE7.pdf',
             "system": 'aple-demo-moodle',
             "course_id": 0,
-            "activity_type": 'longpage',
+            "activity_longpage": 7,
             "activity_name": 'KE 7',
-            "activity_id": 7
         }
     ]
-    # ids = asyncio.run(pp.rt.add_documents(documents))
-    #logger.info('ids')
-    #logger.info(ids)
+    
+    ids = asyncio.run(rag_manager.rt.add_documents(documents))
+    logger.info('document ids')
+    logger.info(ids)
+
     prompt = 'Was ist ein koopertaives System?'
+    #response = asyncio.run(pp.process_simple_question(prompt))
     filter = {
             'system': ['aple-demo-moodle'],
-            'courses': [0],
+            'course_id': [0],
             'activity_longpage': [1,7],
         }
-    docs, response = asyncio.run(pp.process_rag_question(prompt, filter=filter))
-    #response = asyncio.run(pp.process_simple_question(prompt))
+    docs, response = asyncio.run(rag_manager.process_rag_question(question=prompt, filter=filter))
     logger.info('docs')
-    logger.info(docs)
+    #logger.info(docs)
     logger.info('response')
     logger.info(response)
 
