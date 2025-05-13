@@ -5,29 +5,36 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from flasgger import Swagger, swag_from
 import logging
+from utils import require_salt
+
+from RAG_Manager import RAG_Manager
+from LLM_Manager import LLM_Manager
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=os.getenv('LOGLEVEL', logging.INFO),
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
 
-from RAG_Manager import RAG_Manager
-from LLM_Manager import LLM_Manager
+UPLOAD_FOLDER = 'data/uploads/'
+API_TOKEN = os.getenv("API_TOKEN", "")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 app = Flask(__name__)
 swagger = Swagger(app)
 cors = CORS(app)
 
-UPLOAD_FOLDER = 'data/uploads/'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 # init
 rag_manager = RAG_Manager()
 
 
+# ROUTES
+
 @app.route('/', methods=['GET'])
 @cross_origin()
+@require_salt(API_TOKEN)
 @swag_from('specs/root.yml')
 def root():
     """
@@ -79,10 +86,11 @@ def create_document_index():
 
 @app.route('/documents/delete_index', methods=['POST'])
 @cross_origin()
+@require_salt(API_TOKEN)
 @swag_from('specs/documents_delete_index.yml')
 def delete_index():
     """..."""
-    pass
+    return jsonify({'msg': 'none'}), 200
 
 
 
@@ -117,14 +125,14 @@ def get_documents_by_course():
 @swag_from('specs/documents_get_index.yml')
 def get_index():
     """..."""
-    pass
+    return jsonify({'msg': 'none'}), 200
 
 @app.route('/documents/update_index', methods=['POST'])
 @cross_origin()
 @swag_from('specs/documents_update_index.yml')
 def update_index():
     """..."""
-    pass
+    return jsonify({'msg': 'none'}), 200
 
 
 
