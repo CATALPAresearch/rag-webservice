@@ -10,12 +10,17 @@ from utils import require_salt
 from RAG_Manager import RAG_Manager
 from LLM_Manager import LLM_Manager
 
+LOGLEVEL = os.getenv('LOGLEVEL', 'INFO').upper()
+NUMERIC_LEVEL = getattr(logging, LOGLEVEL, logging.INFO)
+
 logging.basicConfig(
-    level=os.getenv('LOGLEVEL', logging.INFO),
+    level=NUMERIC_LEVEL, # FIXME Changing og level does not work
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
+    force=True  # ← this forces reconfiguration
 )
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)  # FIXME Changing og level does not work
 
 UPLOAD_FOLDER = 'data/uploads/'
 API_TOKEN = os.getenv("API_TOKEN", "")
