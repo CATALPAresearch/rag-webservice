@@ -165,7 +165,7 @@ def query_llm():
 def query_rag():
     data = request.get_json()
     #document_index = request.form.get('document_index', None)
-    model = data.get('model', 'unknown')
+    model = data.get('model', 'unknown') # 'phi3:latest'
     prompt = data.get('prompt', 'unknown')
     filter = data.get('filter', {})
     
@@ -178,7 +178,7 @@ def query_rag():
     """
     logger.info('prompt: '+prompt)
     #matched_docs, response = asyncio.run(rag_manager.process_rag_question(prompt, document_index))
-    matched_docs, response = asyncio.run(rag_manager.process_rag_question(prompt, filter=filter))
+    matched_docs, response = asyncio.run(rag_manager.process_rag_question(prompt, model=model, filter=filter))
     
     logger.info("response")
     logger.info(response)
