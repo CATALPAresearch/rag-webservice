@@ -43,7 +43,7 @@ class RAG_Manager(LLM_Manager):
         self.vector_db = self.rt.vector_db
         
 
-    async def process_rag_question(self, question: str, document_ids=[], filter=[]) -> str:
+    async def process_rag_question(self, question: str, model='llama3.1:latest', document_ids=[], filter=[]) -> str:
         """
         Process a user question using the vector database and selected language model.
 
@@ -55,6 +55,12 @@ class RAG_Manager(LLM_Manager):
             str: The generated response to the user's question.
         """
         logger.info(f"Processing question: {question} using model: {self.selected_model}")
+
+        # update model if necessary
+        if model != self.selected_model and model in self.get_model_names():
+            self.selected_model = model
+            self.load_LLM(model=model)
+            logger.info(f"Model changed to: {self.selected_model}")
             
         query_prompt = self._build_query_prompt_from_template(question)
         logger.info('query_prompt')
@@ -205,7 +211,11 @@ if __name__ == "__main__":
             'course_id': [0],
             'activity_longpage': [1,7],
         }
-    docs, response = asyncio.run(rag_manager.process_rag_question(question=prompt, filter=filter))
+    docs, response = asyncio.run(rag_manager.process_rag_question(
+        question=prompt, # 
+        model='deepseek-r1:latest',
+        filter=filter)
+        )
     logger.info('docs')
     #logger.info(docs)
     logger.info('response')
