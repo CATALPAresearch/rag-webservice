@@ -2,8 +2,12 @@ version: "3.9"
 
 services:
   rag-webservice:
+    container_name: rag-webservice
     build: .
     ports:
       - "5000:5000"
     environment:
       OLLAMA_HOST: http://host.docker.internal:11434
+    volumes:
+      - ./data:/rag-webservice/data
+    command: python ./src/app.py

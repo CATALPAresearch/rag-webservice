@@ -24,12 +24,14 @@ nltk.download('averaged_perceptron_tagger_eng')
 ```
 * Edit the .env file
 * Start the webservice `poetry run python3.11 src/ws-basic.py`
-* Test RAG `poetry run python3.11 src/ws/RAG_Manager.py`
+* Test RAG `poetry run python3.11 src/RAG_Manager.py`
 
 
 **Testing Endpoints**
-See the list of all endpoints: http://localhost:5000/apidocs/ 
+See the list of all endpoints in the browser: http://localhost:5000/apidocs/ 
 * Get list of installed LLM models `curl -X POST http://localhost:5000/llm/models/list` 
+* Test RAG inside docker: `docker exec -it rag-webservice python3.11 src/RAG_Manager.py`
+* Test Ollama inside docker: `docker exec -it rag-webservice curl http://host.docker.internal:11434`
 
 
 

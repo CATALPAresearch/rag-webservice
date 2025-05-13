@@ -42,7 +42,7 @@ class VectorDB:
         self.index_embedding = None
         self.embed_model_name = None
         self.set_index_embedding_model() 
-        self.vector_db_path = "./chroma_langchain_db"
+        self.vector_db_path = "/rag-webservice/data/chroma_langchain_db"
         self.create_vector_db()
 
 
