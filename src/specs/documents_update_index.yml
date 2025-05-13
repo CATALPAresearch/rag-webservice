@@ -1,0 +1,6 @@
+summary: Updates a document index
+description: Updates a document index
+consumes:
+- application/json
+produces:
+- application/json

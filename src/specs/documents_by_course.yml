@@ -1,0 +1,45 @@
+summary: Get documents by course
+description: Retrieve documents associated with a given system and course ID.
+consumes:
+- application/json
+produces:
+- application/json
+parameters:
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    properties:
+      system:
+        type: string
+        description: System identifier
+      course_id:
+        type: string
+        description: Course ID
+    required:
+    - system
+    - course_id
+
+responses:
+  200:
+    description: Successfully retrieved documents
+    examples:
+      application/json:
+        success: true
+        documents:
+        - title: "Intro to AI"
+          course_id: "CS101"
+          file: "intro_to_ai.pdf"
+  400:
+    description: Missing parameters in the request
+    examples:
+      application/json:
+        success: false
+        message: "Missing parameters"
+  500:
+    description: Server error
+    examples:
+      application/json:
+        success: false
+        message: "Internal error message here"

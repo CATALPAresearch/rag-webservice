@@ -1,0 +1,32 @@
+summary: Query a large language model (LLM)
+description: Submit a prompt to the LLM and receive a generated response.
+consumes:
+- application/x-www-form-urlencoded
+produces:
+- application/json
+parameters:
+- name: prompt
+  in: formData
+  type: string
+  required: true
+  description: The input prompt for the LLM
+
+responses:
+  200:
+    description: LLM successfully processed the prompt
+    examples:
+      application/json:
+        message: ""
+        response: "The capital of France is Paris."
+  400:
+    description: Missing or invalid prompt
+    examples:
+      application/json:
+        message: "Missing prompt"
+        response: ""
+  500:
+    description: Server error while querying the LLM
+    examples:
+      application/json:
+        message: "Internal error"
+        response: ""

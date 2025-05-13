@@ -1,0 +1,6 @@
+summary: Deletes an document index
+description: Deletes an document index
+consumes:
+- application/json
+produces:
+- application/json

@@ -1,0 +1,6 @@
+summary: gets a document index
+description: gets a document index
+consumes:
+- application/json
+produces:
+- application/json

@@ -1,0 +1,25 @@
+summary: List available LLM models
+description: Returns a list of available Large Language Models (LLMs) managed by the LLM_Manager.
+consumes:
+- application/json
+produces:
+- application/json
+parameters: []
+responses:
+  200:
+    description: Successfully retrieved model names
+    examples:
+      application/json:
+        message: ""
+        success: true
+        data:
+        - llama2
+        - mistral
+        - gemma
+  500:
+    description: Server error while retrieving model names
+    examples:
+      application/json:
+        message: "Internal server error"
+        success: false
+        data: []

@@ -1,0 +1,6 @@
+responses:
+  200:
+    description: Say hello and tell the user that the RAG webservice is operating.
+    examples:
+      application/json:
+        message: Hello, your RAG-Webservice is operating will but will not be accessible as a webpage (;

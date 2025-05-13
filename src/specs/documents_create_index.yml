@@ -1,0 +1,47 @@
+summary: Upload a PDF and create a document index
+description: |
+  Upload a PDF document and associate metadata like system, course ID, document type, and document ID. The PDF is indexed for retrieval.
+
+consumes:
+- multipart/form-data
+
+parameters:
+- name: file
+  in: formData
+  type: file
+  required: true
+  description: The PDF file to upload and index
+- name: system
+  in: formData
+  type: string
+  required: false
+  description: Identifier for the system
+- name: course_id
+  in: formData
+  type: string
+  required: false
+  description: Identifier for the course
+- name: document_type
+  in: formData
+  type: string
+  required: false
+  description: Type of the document (e.g. "lecture_notes")
+- name: document_id
+  in: formData
+  type: string
+  required: false
+  description: Identifier for the document
+
+responses:
+  200:
+    description: File received and indexed successfully
+    examples:
+      application/json:
+        message: File received successfully
+        document_index: [ "doc_abc123" ]
+        file: INFO_ZLB___98_Didactics_of_Computer_Science_EN_20250212.pdf
+  400:
+    description: Bad request, invalid file or missing data
+    examples:
+      application/json:
+        error: Invalid file type

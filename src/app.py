@@ -27,6 +27,8 @@ rag_manager = RAG_Manager()
 
 
 @app.route('/', methods=['GET'])
+@cross_origin()
+@swag_from('specs/root.yml')
 def root():
     """
     Say hello in the browser
@@ -38,6 +40,7 @@ def root():
 
 @app.route('/documents/create_index', methods=['POST'])
 @cross_origin()
+@swag_from('specs/documents_create_index.yml')
 def create_document_index():
     """
     Test: curl -X POST -F file=@"/Users/nise/Downloads/INFO_ZLB___98_Didactics_of_Computer_Science_EN_20250212.pdf" http://localhost:5000/process
@@ -74,9 +77,18 @@ def create_document_index():
     return jsonify({'error': 'Invalid file type'}), 400
 
 
+@app.route('/documents/delete_index', methods=['POST'])
+@cross_origin()
+@swag_from('specs/documents_delete_index.yml')
+def delete_index():
+    """..."""
+    pass
+
+
 
 @app.route('/documents/documents_by_course', methods=['POST'])
 @cross_origin()
+@swag_from('specs/documents_by_course.yml')
 def get_documents_by_course():
     try:
         data = request.get_json()
@@ -101,24 +113,25 @@ def get_documents_by_course():
 
 
 @app.route('/documents/get_index', methods=['POST'])
+@cross_origin()
+@swag_from('specs/documents_get_index.yml')
 def get_index():
     """..."""
     pass
 
 @app.route('/documents/update_index', methods=['POST'])
+@cross_origin()
+@swag_from('specs/documents_update_index.yml')
 def update_index():
     """..."""
     pass
 
 
-@app.route('/documents/delete_index', methods=['POST'])
-def delete_index():
-    """..."""
-    pass
 
 
 @app.route('/llm/models/list', methods=['POST'])
 @cross_origin()
+@swag_from('specs/llm_models_list.yml')
 def get_models():
     llmm = LLM_Manager()
     response = llmm.get_model_names()
@@ -131,6 +144,7 @@ def get_models():
 
 @app.route('/llm/query', methods=['POST'])
 @cross_origin()
+@swag_from('specs/llm_query.yml')
 def query_llm():
     """
     Query a large language model (LLM) with a prompt.
@@ -147,6 +161,7 @@ def query_llm():
 
 @app.route('/llm/query_documents', methods=['POST'])
 @cross_origin()
+@swag_from('specs/llm_query_documents.yml')
 def query_rag():
     data = request.get_json()
     #document_index = request.form.get('document_index', None)
@@ -174,4 +189,5 @@ def query_rag():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+    
 

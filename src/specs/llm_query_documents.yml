@@ -1,0 +1,50 @@
+summary: Query documents using RAG (Retrieval-Augmented Generation)
+description: |
+  Submit a prompt and optional document filters to retrieve relevant context from documents and get an LLM-generated response.
+
+consumes:
+- application/json
+produces:
+- application/json
+
+parameters:
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    properties:
+      model:
+        type: string
+        description: The LLM model to use (e.g. "mistral", "llama2")
+        default: unknown
+      prompt:
+        type: string
+        description: The user prompt or question
+        default: unknown
+      filter:
+        type: object
+        description: Document filter criteria
+        additionalProperties:
+          type: array
+          items:
+            type: string
+    required:
+    - prompt
+
+responses:
+  200:
+    description: Successfully generated a response from the RAG pipeline
+    examples:
+      application/json:
+        response: "Based on the retrieved documents, the answer is..."
+  400:
+    description: Invalid input data
+    examples:
+      application/json:
+        error: "Missing prompt"
+  500:
+    description: Server error during RAG processing
+    examples:
+      application/json:
+        error: "Internal server error"
