@@ -22,7 +22,7 @@ RAG-Webservice is a middleware for an Ollama LLM server and a Moodle plugin call
 import nltk
 nltk.download('averaged_perceptron_tagger_eng')
 ```
-* Edit the .env file
+* Create and edit an .env file, use .env.example as a template
 * Start the webservice `poetry run python3.11 src/ws-basic.py`
 * Test RAG `poetry run python3.11 src/RAG_Manager.py`
 
@@ -32,6 +32,9 @@ See the list of all endpoints in the browser: http://localhost:5000/apidocs/
 * Get list of installed LLM models `curl -X POST http://localhost:5000/llm/models/list` 
 * Test RAG inside docker: `docker exec -it rag-webservice python3.11 src/RAG_Manager.py`
 * Test Ollama inside docker: `docker exec -it rag-webservice curl http://host.docker.internal:11434`
+* `curl -X POST http://localhost:5000/ -H "Authorization: Bearer hello"`
+
+* curl -X POST http://localhost:5000/documents/get_index -H "Content-Type: application/json" -d '{"system":"aple-demo-moodle", "course_id":0, "activity_id":7, "activity_type":"activity_longpage"}'
 
 
 
