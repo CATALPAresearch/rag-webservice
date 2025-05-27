@@ -24,6 +24,7 @@ data/vectors/
 data/uploads/
 data/pdfs/
 data/chroma_langchain_db/
+chroma_langchain_db/chroma.sqlite3
 *.log
 .cache
 .pytest_cache/
