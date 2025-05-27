@@ -5,22 +5,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from flasgger import Swagger, swag_from
 import logging
-from utils import require_salt
+from utils.require_salt import require_salt
+from utils.logging import setup_logging
+from utils.document_model import RAG_Document
 
 from RAG_Manager import RAG_Manager
 from LLM_Manager import LLM_Manager
 
-LOGLEVEL = os.getenv('LOGLEVEL', 'INFO').upper()
-NUMERIC_LEVEL = getattr(logging, LOGLEVEL, logging.INFO)
+setup_logging()
 
-logging.basicConfig(
-    level=NUMERIC_LEVEL, # FIXME Changing og level does not work
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    force=True  # ← this forces reconfiguration
-)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)  # FIXME Changing og level does not work
 
 UPLOAD_FOLDER = 'data/uploads/'
 API_TOKEN = os.getenv("API_TOKEN", "")
@@ -39,7 +32,7 @@ rag_manager = RAG_Manager()
 
 @app.route('/', methods=['GET'])
 @cross_origin()
-@require_salt(API_TOKEN)
+#@require_salt(API_TOKEN)
 @swag_from('specs/root.yml')
 def root():
     """
@@ -60,24 +53,27 @@ def create_document_index():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part '+str(len(request.files))}), 400
         
+        
     file = request.files['file']
     system = request.form.get('system', 'unknown')
     course_id = request.form.get('course_id', 'unknown')
-    document_type = request.form.get('document_type', 'unknown')
-    document_id = request.form.get('document_id', 'unknown')
+    activity_type = request.form.get('activity_type', 'unknown')
+    activity_name = request.form.get('activity_name', 'unknown')
+    activity_id = request.form.get('activity_id', 'unknown')
 
     if file and file.filename.endswith('.pdf'):
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
         
-        documents = [
-            {
-                "system": system,
-                "course_id": course_id,
-                "file": filepath,
-            }
-        ]
-        documents[0][document_type] = document_id
+        doc = RAG_Document(
+            system=system,
+            course_id=course_id,
+            activity_type=activity_type,
+            activity_name=activity_name,
+            file=filepath,
+        )
+        documents = [doc.dict(exclude_none=True)]
+        documents[0][activity_type] = activity_id
         document_index = asyncio.run(rag_manager.rt.add_documents(documents))
         
         return jsonify({
@@ -95,7 +91,32 @@ def create_document_index():
 @swag_from('specs/documents_delete_index.yml')
 def delete_index():
     """..."""
-    return jsonify({'msg': 'none'}), 200
+    try:
+        data = request.get_json()
+        system = data.get('system', None)
+        course_id = data.get('course_id', -1)
+        activity_type = data.get('activity_type', None)
+        activity_id = data.get('activity_id', None)
+
+        if system == None  or course_id == -1 or activity_type == None or activity_id == None:
+            return jsonify({"success": False, "message": "Missing parameters"}), 400
+
+        rag_manager.rt.delete_document(
+            system=system, 
+            course_id=course_id,
+            activity_type=activity_type,
+            activity_id=activity_id
+            )
+
+        return jsonify({
+            "success": True
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 
@@ -105,10 +126,10 @@ def delete_index():
 def get_documents_by_course():
     try:
         data = request.get_json()
-        system = data.get('system')
-        course_id = data.get('course_id')
+        system = data.get('system', "")
+        course_id = data.get('course_id', -1)
 
-        if not system or not course_id:
+        if system == ""  or course_id == -1:
             return jsonify({"success": False, "message": "Missing parameters"}), 400
 
         documents = rag_manager.rt.get_documents_by_course(system=system, course_id=course_id)
@@ -116,7 +137,26 @@ def get_documents_by_course():
         return jsonify({
             "success": True,
             "documents": documents
-        })
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+    
+
+@app.route('/documents/list', methods=['POST'])
+@cross_origin()
+@swag_from('specs/documents_list.yml')
+def get_documents():
+    try:
+        documents = rag_manager.rt.get_documents_by_course(system=None, course_id=None)
+
+        return jsonify({
+            "success": True,
+            "documents": documents
+        }), 200
 
     except Exception as e:
         return jsonify({
@@ -125,18 +165,48 @@ def get_documents_by_course():
         }), 500
 
 
+
 @app.route('/documents/get_index', methods=['POST'])
 @cross_origin()
 @swag_from('specs/documents_get_index.yml')
 def get_index():
     """..."""
-    return jsonify({'msg': 'none'}), 200
+    try:
+        data = request.get_json()
+        system = data.get('system', None)
+        course_id = data.get('course_id', -1)
+        activity_type = data.get('activity_type', None)
+        activity_id = data.get('activity_id', None)
+
+        if system == None  or course_id == -1 or activity_type == None or activity_id == None:
+            return jsonify({"success": False, "message": "Missing parameters"}), 400
+
+        document = rag_manager.rt.get_index(
+            system=system, 
+            course_id=course_id,
+            activity_type=activity_type,
+            activity_id=activity_id
+            )
+
+        return jsonify({
+            "success": True,
+            "document": document
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
 
 @app.route('/documents/update_index', methods=['POST'])
 @cross_origin()
 @swag_from('specs/documents_update_index.yml')
 def update_index():
-    """..."""
+    """
+    Updates a document from the document store. Currently not implemented.
+    """
     return jsonify({'msg': 'none'}), 200
 
 

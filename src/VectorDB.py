@@ -17,6 +17,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
+from utils.document_model import RAG_Document
+
 # Set protobuf environment variable to avoid error messages
 # This might cause some issues with latency but it's a tradeoff
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
@@ -42,7 +44,7 @@ class VectorDB:
         self.index_embedding = None
         self.embed_model_name = None
         self.set_index_embedding_model() 
-        self.vector_db_path = "/rag-webservice/data/chroma_langchain_db"
+        self.vector_db_path = "./data/chroma_langchain_db"
         self.create_vector_db()
 
 
@@ -86,15 +88,6 @@ class VectorDB:
         return data, temp_dir, path
 
 
-    def handleSampleFile(self, file):
-        """
-        Stores uploaded file temporally on disc
-        """
-        logger.info(f"File {file} content extracted")
-        loader = UnstructuredPDFLoader(file)
-        data = loader.load()
-        return data, '', ''
-    
     async def handlePDF(self, file_path):
         loader = PyPDFLoader(file_path)
         pages = []
@@ -149,16 +142,7 @@ class VectorDB:
                 logger.info('page: ' + str(page_num))
                 metadata = doc
                 metadata['page'] = page_num
-                #metadata = {
-                #            "system": doc["system"],
-                #            "file": doc["file"],
-                #            "course_id": doc["course_id"],
-                #            "page": page_num,
-                            #"activity_id": doc["activity_id"],
-                            #"activity_name": doc["activity_name"],
-                            #"activity_type": doc["activity_type"],
-                #        }
-                #metadata[doc["activity_type"]] = doc["activity_id"]
+                
                 documents.append(
                     Document(
                         page_content=page.page_content,
@@ -183,7 +167,98 @@ class VectorDB:
         logger.info(document_ids)
         return document_ids
     
+    
+    def get_documents_by_course(self, system=None, course_id=None):
+        """
+        ...
+        """
+        # Perform filtered search via metadata
+        # results = self.vector_db.get(include=["metadatas", "documents"])
+        results = self.vector_db.get()
+        
+        documents = []
+        # filter documents by system and course_id
+        for doc, meta in zip(results['documents'], results['metadatas']):
+            if meta.get('system') == system and str(meta.get('course_id')) == str(course_id):
+                doc = self.get_RAG_document(meta)
+                documents.append( doc.dict(exclude_none=True))
+            elif meta.get('system') == system and course_id==None:
+                doc = self.get_RAG_document(meta)
+                documents.append( doc.dict(exclude_none=True))
+            elif system == None and course_id == None:
+                doc = self.get_RAG_document(meta)
+                documents.append(doc.dict(exclude_none=True))
 
+        return documents
+    
+
+    def get_RAG_document(self, meta) -> RAG_Document:
+        """
+        """
+        return RAG_Document(
+            system=meta.get("system"),
+            course_id=meta.get("course_id", 0),
+            activity_type=meta.get("activity_type", None),
+            activity_name=meta.get("activity_name", None),
+            activity_longpage=meta.get("activity_longpage", None),        
+            activity_pdf=meta.get("activity_pdf", None),
+            activity_assign=meta.get("activity_assign", None),
+            activity_wiki=meta.get("activity_wiki", None),
+            activity_quiz=meta.get("activity_quiz", None),
+            activity_forum=meta.get("activity_forum", None),
+            file=meta.get("file", None),
+            page=meta.get("page", None),
+        )
+        
+
+    def get_index(self, system, course_id, activity_type, activity_id) -> None:
+        """
+        Get a document from the document store
+        """
+        results = self.vector_db.get()
+        documents = []
+        for doc, meta in zip(results['documents'], results['metadatas']):
+            if meta.get('system') == system and str(meta.get('course_id')) == str(course_id) and str(meta.get('activity_type')) == activity_type and str(meta.get('activity_id')) == activity_id:
+                print('got' + str(doc.id))
+                documents.append(doc)
+        return documents
+
+
+    def delete_document(self, system, course_id, activity_type, activity_id) -> None:
+        """
+        Deletes a document from the document store
+        """
+        results = self.vector_db.get()
+        for doc, meta in zip(results['documents'], results['metadatas']):
+            if meta.get('system') == system and str(meta.get('course_id')) == str(course_id) and str(meta.get('activity_type')) == activity_type and str(meta.get('activity_id')) == activity_id:
+                print('delete' + str(doc.id))
+                self.vector_db.delete(ids=[doc.id])
+
+
+    def update_document(self) -> None:
+        """
+        Updates a document from the document store. Currently not implemented.
+        """
+        pass
+
+
+
+    def delete_vector_db(self) -> None:
+        """
+        Delete the vector database and clear related session state.
+        """
+        logger.info("Deleting vector DB")
+        if self.vector_db is not None:
+            try:
+                self.vector_db.delete_collection()
+                logger.info("Vector DB and related session state cleared")
+            except Exception as e:
+                logger.error(f"Error deleting collection: {e}")
+        else:
+            logger.warning("Attempted to delete vector DB, but none was found")
+
+
+    # TODO: remove
     def load_sample_pdf(self, sample_path = "data/pdfs/sample/pobscinf.pdf"):
         if os.path.exists(sample_path):
             if self.vector_db is None:
@@ -198,37 +273,14 @@ class VectorDB:
         else:
             print("Sample PDF file not found in the current directory.")
     
-
-    def get_documents_by_course(self, system, course_id):
-        """
-        ...
-        """
-        # Perform filtered search via metadata
-        results = self.vector_db.get(include=["metadatas", "documents"])
-
-        documents = []
-        # filter documents by system and course_id
-        for doc, meta in zip(results['documents'], results['metadatas']):
-            if meta.get('system') == system and str(meta.get('course_id')) == str(course_id):
-                documents.append({
-                    #"id": meta.get("document_id", ""),
-                    #"title": meta.get("title", "Untitled Document"),
-                    "file": meta.get("filename", "unknown.pdf"),
-                    "system": meta.get("system"),
-                    "course_id": meta.get("course_id")
-                })
-        return documents
     
-    def delete_vector_db(self) -> None:
+    # TODO remove function
+    def handleSampleFile(self, file):
         """
-        Delete the vector database and clear related session state.
+        Stores uploaded file temporally on disc
         """
-        logger.info("Deleting vector DB")
-        if self.vector_db is not None:
-            try:
-                self.vector_db.delete_collection()
-                logger.info("Vector DB and related session state cleared")
-            except Exception as e:
-                logger.error(f"Error deleting collection: {e}")
-        else:
-            logger.warning("Attempted to delete vector DB, but none was found")
+        logger.info(f"File {file} content extracted")
+        loader = UnstructuredPDFLoader(file)
+        data = loader.load()
+        return data, '', ''
+    
