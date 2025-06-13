@@ -2,20 +2,18 @@
 RAG-Webservice is a middleware for an Ollama LLM server and a Moodle plugin called Openchat.
 
 ## Features
-* ...
-
+* Create an index for a provided document.
+* Stores a document index in a vector store including metadata about the requestion system, course ID, content type, and instance ID
+* Answers querys concering all documents within a given context defined by the provided metadata (system, course, content type, instance ID)
 
 ## Getting started
 
 **Docker setup**
 * Build Docker container: `docker build --no-cache -t rag-webservice .`
-* Optional: Check for vulnerabilities: `docker scout quickview `
-* Start the container: `docker run --name rag-webservice -p 5000:5000 rag-webservice`
+* `docker compose up`
+* note: `docker run --name rag-webservice -p 5000:5000 rag-webservice`
 
-* `docker compose up --build`
-* `docker compose up -d`
-
-**Local setup**
+**Local setup without using docker**
 * Run `poetry install`
 * Import nltk if necessary: 
 ```
@@ -40,8 +38,8 @@ See the list of all endpoints in the browser: http://localhost:5000/apidocs/
 
 ## License
 
-This project is licensed under the GPL License. For more details, please refer to the [LICENSE](./LICENSE) file.
+This project is licensed under MIT License. For more details, please refer to the [LICENSE](https://choosealicense.com/licenses/mit/).
 
 ## Citation
 
-```Seidel, N. (2025). RAGOUT: Retrieval Augmented Generation for Online Universal Testing in Online Learning```
+```Seidel, N. (2025). RAGWEED: Retrieval Augmented Generation Webservice for Education. https://github.com/CATALPAresearch/rag-webservice ```
